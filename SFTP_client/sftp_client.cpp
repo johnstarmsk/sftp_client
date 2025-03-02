@@ -108,6 +108,15 @@ void UploadThread::run()
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
+    QFile read_settings_file("set_file.ini");
+    if (read_settings_file.open(QIODevice::ReadOnly)){
+        ip_read_from_file = read_settings_file.readLine().trimmed();
+        user_read_from_file = read_settings_file.readLine().trimmed();
+        download_filename_read_from_file = read_settings_file.readLine().trimmed();
+        upload_filename_read_from_file = read_settings_file.readLine().trimmed();
+    }
+    read_settings_file.close();
+
     download_thread = new DownloadThread;
     upload_thread = new UploadThread;
 
@@ -117,10 +126,12 @@ MainWidget::MainWidget(QWidget *parent)
     ip_lbl = new QLabel("ip: ");
     ip_lbl->setAlignment(Qt::AlignRight);
     ip_input = new QLineEdit("");
+    ip_input->setText(ip_read_from_file);
 
     user_lbl = new QLabel("user:");
     user_lbl->setAlignment(Qt::AlignRight);
     user_input = new QLineEdit("");
+    user_input->setText(user_read_from_file);
 
     pass_lbl = new QLabel("password:");
     pass_lbl->setAlignment(Qt::AlignRight);
@@ -130,6 +141,9 @@ MainWidget::MainWidget(QWidget *parent)
     path_lbl = new QLabel("download file:");
     path_lbl->setAlignment(Qt::AlignRight);
     path = new QLineEdit("Enter your home catalogue (with filename)");
+    if (download_filename_read_from_file != ""){
+        path->setText(download_filename_read_from_file);
+    }
 
     load_key_file_btn = new QPushButton("SSH key");
     load_key_file_btn_lbl = new QLabel("KEY NOT SELECTED");
@@ -148,6 +162,9 @@ MainWidget::MainWidget(QWidget *parent)
     upload_filename_lbl = new QLabel("upload filename:");
     upload_filename_lbl->setAlignment(Qt::AlignRight);
     upload_filename_input = new QLineEdit("Enter server home catalogue (with filename)");
+    if (upload_filename_read_from_file != ""){
+        upload_filename_input->setText(upload_filename_read_from_file);
+    }
 
     console = new QTextEdit();
 
@@ -342,5 +359,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    if (QFile::exists("set_file.ini")){
+        QFile::remove("set_file.ini");
+    }
+
+    QFile read_settings_file("set_file.ini");
+    if (read_settings_file.open(QIODevice::WriteOnly)){
+        QTextStream out(&read_settings_file);
+        out << main_widget->ip_input->text() << "\n";
+        out << main_widget->user_input->text() << "\n";
+        out << main_widget->path->text() << "\n";
+        out << main_widget->upload_filename_input->text();
+    }
+    read_settings_file.close();
+
     delete ui;
 }

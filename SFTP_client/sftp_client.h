@@ -134,6 +134,11 @@ public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
 
+    QString ip_read_from_file;
+    QString user_read_from_file;
+    QString download_filename_read_from_file;
+    QString upload_filename_read_from_file;
+
     QGridLayout* grid;
 
     QLabel* ip_lbl;
