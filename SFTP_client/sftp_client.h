@@ -33,6 +33,9 @@ struct FtpFile {
 };
 
 //--------------------------------------------------------------------
+//Глобальный флаг для остановки передачи
+static bool stopTransfer = false;
+//--------------------------------------------------------------------
 
 static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 {
@@ -72,6 +75,10 @@ static int progress_callback(void *ptr, double total_to_download, double now_dow
     progress->downloaded = now_downloaded;
     progress->total_size_upload = total_to_upload;
     progress->uploaded = now_uploaded;
+
+    if (stopTransfer) {
+        return 1;
+    }
 
     return 0;
 }
@@ -130,6 +137,8 @@ public slots:
     void upload_finished_slot();
     void update_download_upload_progressbar_slot();
 
+    void cancel_btn_slot();
+
 public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
@@ -170,6 +179,8 @@ public:
     QTextEdit* console;
 
     QProgressBar* progress;
+
+    QPushButton* cancel_btn;
 
     QTimer* update_download_progressbar;
 

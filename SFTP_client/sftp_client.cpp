@@ -171,6 +171,8 @@ MainWidget::MainWidget(QWidget *parent)
     progress = new QProgressBar();
     progress->setValue(0);
 
+    cancel_btn = new QPushButton("Cancel");
+
     grid->addWidget(ip_lbl, 0, 0);
     grid->addWidget(ip_input, 0, 1);
     grid->addWidget(user_lbl, 1, 0);
@@ -191,6 +193,7 @@ MainWidget::MainWidget(QWidget *parent)
     grid->addWidget(upload_filename_input, 9, 1);
     grid->addWidget(console, 10, 0, 1, 2);
     grid->addWidget(progress, 11, 0, 1, 2);
+    grid->addWidget(cancel_btn, 12, 0);
 
     setLayout(grid);
 
@@ -200,9 +203,24 @@ MainWidget::MainWidget(QWidget *parent)
     connect(save_path, SIGNAL(clicked()), this, SLOT(save_path_slot()));
     connect(download_thread, SIGNAL(finished()), this, SLOT(download_finished_slot()));
     connect(upload_thread, SIGNAL(finished()), this, SLOT(upload_finished_slot()));
+    connect(cancel_btn, SIGNAL(clicked()), this, SLOT(cancel_btn_slot()));
 
     update_download_progressbar = new QTimer();
     connect(update_download_progressbar, SIGNAL(timeout()), this, SLOT(update_download_upload_progressbar_slot()));
+}
+
+void MainWidget::cancel_btn_slot()
+{
+    if (download_thread->isRunning()){
+        download_thread->quit();
+        stopTransfer = true;
+        cancel_btn->setEnabled(false);
+    }
+    if (upload_thread->isRunning()){
+        upload_thread->quit();
+        stopTransfer = true;
+        cancel_btn->setEnabled(false);
+    }
 }
 
 void MainWidget::download_finished_slot()
@@ -219,6 +237,8 @@ void MainWidget::download_finished_slot()
     download->setEnabled(true);
     upload_btn->setEnabled(true);
     upload_filename_input->setEnabled(true);
+    cancel_btn->setEnabled(true);
+    stopTransfer = false;
 }
 
 void MainWidget::upload_finished_slot()
@@ -235,6 +255,8 @@ void MainWidget::upload_finished_slot()
     download->setEnabled(true);
     upload_btn->setEnabled(true);
     upload_filename_input->setEnabled(true);
+    cancel_btn->setEnabled(true);
+    stopTransfer = false;
 }
 
 void MainWidget::load_key_file_slot()
